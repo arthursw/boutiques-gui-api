@@ -23,7 +23,9 @@ interface SendMessage {
 }
 
 public class BoutiquesUtils {
-    
+	
+	static boolean processStarted = false;
+	
 	public static String writeTemporaryFile(String pFilename, String content) throws IOException {
 	    File tempDir = new File(System.getProperty("java.io.tmpdir"));
 	    File tempFile = File.createTempFile(pFilename, ".tmp", tempDir);
@@ -35,47 +37,66 @@ public class BoutiquesUtils {
 	    return tempFile.getAbsolutePath();
 	}
 
-    private static void sendStream(BufferedReader bufferedReader, boolean isError, SendMessage sendMessage) {
+    private static String sendStream(BufferedReader bufferedReader, boolean isError, SendMessage sendMessage) {
     	try {
-	    	String line;
-			if((line=bufferedReader.readLine())!=null) {
+//    		// Check if run is called every 250 ms: (it's not)
+//    		if(!isError) {
+//                System.out.println("run");
+//            	sendMessage.apply("run", false);    			
+//    		}
+        	
+	    	String line = bufferedReader.readLine();
+			if(line != null) {
 	            System.out.println(line);
             	sendMessage.apply(line, isError);
 			}
+			return line;
 	    } catch (IOException ex) {
+            System.out.println("Server error: " + ex.getMessage());
         	sendMessage.apply("Server error: " + ex.getMessage(), true);
 	        ex.printStackTrace();
 	    }
+    	return null;
     }
-    
-    public static void sendProcessStreams(Process process, SendMessage sendMessage) {
-        BufferedReader inputBufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
+    public static void sendProcessStreams(Process process, SendMessage sendMessage) {
+        BufferedReader inputBufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()), 1);
+        BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()), 1);
+        System.out.println("Start reading process");
         Timer timer = new Timer();
-        
         timer.scheduleAtFixedRate(new TimerTask() {
         	  @Override
         	  public void run() {
-        		  if(!process.isAlive()) {
+        		  String inputLine = sendStream(inputBufferedReader, false, sendMessage);
+        		  String errorLine = sendStream(errorBufferedReader, true, sendMessage);
+        		  if(inputLine == null && errorLine == null && !process.isAlive()) {
+        			  System.out.println("Process finished");
         			  timer.cancel();
-        			  return;
         		  }
-        		  sendStream(inputBufferedReader, false, sendMessage);
-        		  sendStream(errorBufferedReader, true, sendMessage);
         	  }
         	}, 0, 250);
+
     }
+
+//    public static void sendProcessStreams(Process process, SendMessage sendMessage) {
+//    	// Daemonize the reading process just to make sure it is non blocking 
+//    	// but it is not working, the output seems to be buffered 
+//    	// and thrown in one shot after a relatively long period of time...
+//        Thread commandLineThread = new Thread(() -> {
+//        	sendProcessStreamsThreaded(process, sendMessage);
+//        });
+//        commandLineThread.setDaemon(true);
+//        commandLineThread.start();
+//    }
 
     public static Process runCommandLineAsync(final String cmdline, final String directory) throws IOException {
     	String[] command = { "/bin/bash", "-c", cmdline};
         ProcessBuilder processBuilder = new ProcessBuilder(command);
-
         processBuilder.directory(new File(directory != null ? directory : "."));
         Process process = processBuilder.start();
         return process;
     }
-    
+
     public static int runCommandLineSync(final String cmdline, final String directory, ArrayList<String> output) throws IOException, Exception {
     	String[] command = { "/bin/bash", "-c", cmdline};
         ProcessBuilder processBuilder = new ProcessBuilder(command);

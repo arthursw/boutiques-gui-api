@@ -30,3 +30,4 @@ blog/bin/
 hs_err_pid*
 
 *.nii.gz
+HEAD^
