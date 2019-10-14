@@ -36,7 +36,7 @@ public class BoutiquesController {
     	this.brokerMessagingTemplate.convertAndSend("/message/errors", message);
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @GetMapping("/tool/search")
     public ArrayList<BoutiquesTool> searchTool(@RequestParam(value="query", defaultValue="") String query) {
 
@@ -53,7 +53,7 @@ public class BoutiquesController {
         return searchResults;
     }
     
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @GetMapping("/tool/all")
     public ArrayList<BoutiquesTool> getAllTools() {
 
@@ -81,7 +81,7 @@ public class BoutiquesController {
         }
     }
     
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @GetMapping("/tool/{id}/descriptor/")
     public ObjectNode getDescriptorById(@PathVariable String id) {
 
@@ -100,7 +100,7 @@ public class BoutiquesController {
         }
     }
     
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @GetMapping("/tool/{id}/invocation")
     public String getInvocationById(@PathVariable String id, @RequestParam(value="complete", defaultValue="false") String completeString) {
 
@@ -117,7 +117,7 @@ public class BoutiquesController {
         }
     }
     
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @PostMapping("/tool/{id}/generate-command/")
     public String generateCommandById(@RequestBody ObjectNode invocation, @PathVariable String id) {
 
@@ -133,7 +133,7 @@ public class BoutiquesController {
         }
     }
 
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @PostMapping("/tool/{id}/execute/")
     public String getExecuteOutputById(@RequestBody ObjectNode invocation, @PathVariable String id) {
 
@@ -162,7 +162,7 @@ public class BoutiquesController {
         }
     }
     
-    @CrossOrigin(origins = "http://localhost:4200")
+    @CrossOrigin(origins = "https://shanoir-ng-nginx")
     @PostMapping("/tool/update-database/")
     public String updateDatabase() {
     	BoutiquesUtils.updateToolDatabase();

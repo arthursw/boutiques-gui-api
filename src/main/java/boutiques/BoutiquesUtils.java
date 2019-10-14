@@ -39,12 +39,7 @@ public class BoutiquesUtils {
 
     private static String sendStream(BufferedReader bufferedReader, boolean isError, SendMessage sendMessage) {
     	try {
-//    		// Check if run is called every 250 ms: (it's not)
-//    		if(!isError) {
-//                System.out.println("run");
-//            	sendMessage.apply("run", false);    			
-//    		}
-        	
+
 	    	String line = bufferedReader.readLine();
 			if(line != null) {
 	            System.out.println(line);
@@ -60,8 +55,10 @@ public class BoutiquesUtils {
     }
 
     public static void sendProcessStreams(Process process, SendMessage sendMessage) {
-        BufferedReader inputBufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()), 1);
-        BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()), 1);
+    	// Note: it is also possible not to buffer the input stream, to have more real time feedback
+    	// 	     but buffer reader is convenient to send the stream line by line (otherwise one must choose an arbitrary buffer size)
+        BufferedReader inputBufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+        BufferedReader errorBufferedReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
         System.out.println("Start reading process");
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
